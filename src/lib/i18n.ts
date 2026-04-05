@@ -93,7 +93,7 @@ export const translations = {
       contactTitle: '业务详情咨询',
       scanToAdd: '扫码添加微信',
       copyright: '版权所有 © 2025 大连阳光锅炉辅机有限公司',
-      techSupport: '技术支持: kuwang',
+      techSupport: '技术支持: Marie',
       hotline: '服务热线：15840905233',
       address: '地址：大连市甘井子区姚家工业区111号',
       tags: '页面Tags：',

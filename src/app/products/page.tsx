@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/Header";
@@ -191,7 +191,57 @@ function QuoteModal({
   product: { name: string } | null;
   onClose: () => void;
 }) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [company, setCompany] = useState("");
+  const [email, setEmail] = useState("");
+  const [inquiry, setInquiry] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [statusMessage, setStatusMessage] = useState("");
+
   if (!product) return null;
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus("sending");
+    setStatusMessage("");
+
+    try {
+      const res = await fetch("/api/inquiry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          phone,
+          email,
+          company,
+          product: product.name,
+          inquiry,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setStatus("error");
+        setStatusMessage(data?.error || "提交失败，请稍后再试。");
+        return;
+      }
+
+      setStatus("success");
+      setStatusMessage("询价提交成功，我们会尽快与您联系。" );
+      setName("");
+      setPhone("");
+      setCompany("");
+      setEmail("");
+      setInquiry("");
+    } catch (error) {
+      setStatus("error");
+      setStatusMessage("网络错误，请稍后重试。");
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={onClose}>
@@ -207,28 +257,67 @@ function QuoteModal({
         <div className="mb-4 p-3 bg-gray-50 text-sm">
           <strong>咨询产品：</strong>{product.name}
         </div>
-        <form className="space-y-4">
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">您的姓名 *</label>
-            <input type="text" className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]" />
+            <input
+              type="text"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]"
+              required
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">联系电话 *</label>
-            <input type="tel" className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]" />
+            <input
+              type="tel"
+              value={phone}
+              onChange={(event) => setPhone(event.target.value)}
+              className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">邮箱 *</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]"
+              required
+            />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">公司名称</label>
-            <input type="text" className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]" />
+            <input
+              type="text"
+              value={company}
+              onChange={(event) => setCompany(event.target.value)}
+              className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]"
+            />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">需求说明</label>
-            <textarea rows={3} className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">需求说明 *</label>
+            <textarea
+              rows={3}
+              value={inquiry}
+              onChange={(event) => setInquiry(event.target.value)}
+              className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]"
+              required
+            />
           </div>
+          {statusMessage && (
+            <p className={`text-sm ${status === "success" ? "text-green-600" : "text-red-600"}`}>
+              {statusMessage}
+            </p>
+          )}
           <button
             type="submit"
-            className="w-full py-3 bg-[#f7931e] text-white font-medium hover:bg-[#e5851a] transition-colors"
+            disabled={status === "sending"}
+            className="w-full py-3 bg-[#f7931e] text-white font-medium hover:bg-[#e5851a] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            提交询价
+            {status === "sending" ? "提交中..." : "提交询价"}
           </button>
         </form>
         <p className="mt-4 text-xs text-gray-500 text-center">

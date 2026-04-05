@@ -4,15 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 
 const productCategories = [
-  { name: "往复炉排", href: "#" },
-  { name: "往复炉排配件", href: "#" },
-  { name: "鳞片炉排", href: "#" },
-  { name: "鳞片炉排配件", href: "#" },
-  { name: "横梁炉排", href: "#" },
-  { name: "横梁炉排配件", href: "#" },
-  { name: "链带炉排", href: "#" },
-  { name: "链带炉排配件", href: "#" },
-  { name: "除渣机&上煤机", href: "#" },
+  { name: "往复炉排", href: "/products" },
+  { name: "往复炉排配件", href: "/products" },
+  { name: "鳞片炉排", href: "/products" },
+  { name: "鳞片炉排配件", href: "/products" },
+  { name: "横梁炉排", href: "/products" },
+  { name: "横梁炉排配件", href: "/products" },
+  { name: "链带炉排", href: "/products" },
+  { name: "链带炉排配件", href: "/products" },
+  { name: "除渣机&上煤机", href: "/products" },
 ];
 
 const featuredProduct = {

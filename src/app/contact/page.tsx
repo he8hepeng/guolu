@@ -5,11 +5,17 @@ import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import SideToolbar from "@/components/SideToolbar";
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { useTranslation } from "@/lib/i18n";
 
 export default function ContactPage() {
   const [activeTab, setActiveTab] = useState<"contact" | "message">("contact");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
+  const [statusMessage, setStatusMessage] = useState("");
   const t = useTranslation();
 
   return (
@@ -159,13 +165,50 @@ export default function ContactPage() {
             /* Message Form */
             <div className="max-w-2xl mx-auto">
               <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">{t.contact.form.title}</h2>
-              <form className="space-y-4">
+              <form
+                className="space-y-4"
+                onSubmit={async (event: FormEvent<HTMLFormElement>) => {
+                  event.preventDefault();
+                  setStatus("sending");
+                  setStatusMessage("");
+
+                  try {
+                    const res = await fetch("/api/contact", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({ name, phone, email, message }),
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                      setStatus("error");
+                      setStatusMessage(data?.error || "提交失败，请稍后再试。");
+                      return;
+                    }
+
+                    setStatus("success");
+                    setStatusMessage("留言已发送，感谢您的联系！");
+                    setName("");
+                    setPhone("");
+                    setEmail("");
+                    setMessage("");
+                  } catch (error) {
+                    setStatus("error");
+                    setStatusMessage("网络错误，请稍后重试。");
+                  }
+                }}
+              >
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="name" className="block text-sm text-gray-600 mb-1">{t.contact.form.name}</label>
                     <input
                       type="text"
                       id="name"
+                      value={name}
+                      onChange={(event) => setName(event.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#f7931e]"
                       placeholder={t.contact.form.namePlaceholder}
                     />
@@ -175,6 +218,8 @@ export default function ContactPage() {
                     <input
                       type="tel"
                       id="phone"
+                      value={phone}
+                      onChange={(event) => setPhone(event.target.value)}
                       className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#f7931e]"
                       placeholder={t.contact.form.phonePlaceholder}
                     />
@@ -185,6 +230,8 @@ export default function ContactPage() {
                   <input
                     type="email"
                     id="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#f7931e]"
                     placeholder={t.contact.form.emailPlaceholder}
                   />
@@ -194,15 +241,23 @@ export default function ContactPage() {
                   <textarea
                     id="message"
                     rows={5}
+                    value={message}
+                    onChange={(event) => setMessage(event.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:border-[#f7931e] resize-none"
                     placeholder={t.contact.form.messagePlaceholder}
                   />
                 </div>
+                {statusMessage && (
+                  <p className={`text-sm ${status === "success" ? "text-green-600" : "text-red-600"}`}>
+                    {statusMessage}
+                  </p>
+                )}
                 <button
                   type="submit"
-                  className="w-full bg-[#f7931e] text-white py-3 rounded font-medium hover:bg-[#e5851a] transition-colors"
+                  disabled={status === "sending"}
+                  className="w-full bg-[#f7931e] text-white py-3 rounded font-medium hover:bg-[#e5851a] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                 >
-                  {t.contact.form.submit}
+                  {status === "sending" ? "发送中..." : t.contact.form.submit}
                 </button>
               </form>
             </div>

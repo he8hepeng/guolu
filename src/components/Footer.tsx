@@ -49,8 +49,8 @@ export default function Footer() {
                 <Image
                   src="/wechat-qr.jpg"
                   alt="微信二维码"
-                  width={120}
-                  height={120}
+                  width={230}
+                  height={300}
                   className="bg-white p-2"
                 />
                 <p className="text-sm text-white/70 mt-2">{t.footer.scanToAdd}</p>
@@ -81,7 +81,7 @@ export default function Footer() {
               {tags.map((tag, index) => (
                 <Link
                   key={index}
-                  href="#"
+                  href="/products"
                   className="inline-block mr-2 mb-1 hover:text-[#f7931e] transition-colors"
                 >
                   {tag}

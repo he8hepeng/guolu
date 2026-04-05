@@ -51,7 +51,7 @@ export default function SideToolbar() {
         </a>
 
         {/* Email */}
-        <a
+        {/* <a
           href="mailto:sales@cnlky.com"
           className="flex items-center justify-center w-12 h-12 text-white hover:bg-[#e5851a] transition-colors border-b border-white/20"
           title="邮件咨询"
@@ -59,7 +59,7 @@ export default function SideToolbar() {
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
             <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
           </svg>
-        </a>
+        </a> */}
 
         {/* QR Code */}
         <div
@@ -73,7 +73,7 @@ export default function SideToolbar() {
 
           {/* QR popup */}
           {showQR && (
-            <div className="absolute right-full mr-3 bg-white p-4 rounded-lg shadow-xl">
+            <div className="absolute right-full mr-3 bg-white p-4 rounded-lg shadow-xl fixed-popup">
               <Image
                 src="/wechat-qr.jpg"
                 alt="微信二维码"
