@@ -1,481 +1,355 @@
-"use client";
+'use client';
 
-import { FormEvent, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import SideToolbar from "@/components/SideToolbar";
+import { useState, useEffect, Suspense } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+import FixedSidebar from '@/components/FixedSidebar';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
-// 产品分类
-const categories = [
-  { id: "wangfu", name: "往复炉排" },
-  { id: "wangfu-parts", name: "往复炉排配件" },
-  { id: "linpian", name: "鳞片炉排" },
-  { id: "linpian-parts", name: "鳞片炉排配件" },
-  { id: "hengliang", name: "横梁炉排" },
-  { id: "hengliang-parts", name: "横梁炉排配件" },
-  { id: "liandai", name: "链带炉排" },
-  { id: "liandai-parts", name: "链带炉排配件" },
-  { id: "chuzha", name: "除渣机&上煤机" },
-  { id: "laji", name: "垃圾焚烧炉" },
-];
+interface Product {
+  id: number;
+  name: string;
+  nameEn: string;
+  category: string;
+  categoryEn: string;
+  description: string;
+  descriptionEn: string;
+  specs: string[];
+  specsEn: string[];
+  image: string;
+}
 
-// 往复炉排产品
-const wangfuProducts = [
-  { id: 1, name: "160t/h 往复炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/223af2a9-442c-40e2-8511-fe57e6e7d065.jpg" },
-  { id: 2, name: "100t/h 往复炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/2201101d-243a-44e6-b8f1-ae66f1427197.jpg" },
-  { id: 3, name: "65t/h 往复炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/2f89ba4e-e744-4d04-8513-650f8ce128a9.jpg" },
-  { id: 4, name: "60t/h 往复炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/e3882b4e-b878-4eea-8add-b0abe7c8463e.jpg" },
-  { id: 5, name: "45t/h 往复炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/f1db5e09-51e5-4e99-bf82-5c9fb7eca3c9.jpg" },
-  { id: 6, name: "40t/h 往复炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/bbc9339f-4cc4-4777-aa46-1e1fb869f2b4.jpg" },
-  { id: 7, name: "35t/h 往复炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/7824e9a8-5cfc-4dae-89c8-9cb8f04c4d16.jpg" },
-  { id: 8, name: "30t/h 往复炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/4e4df63b-544b-402f-b3e9-c6d68451e51d.jpg" },
-  { id: 9, name: "25t/h 往复炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/a59d8bcf-9736-4a11-a85a-240b59977af6.jpg" },
-  { id: 10, name: "20t/h 往复炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/d7b84c90-7eb6-46e5-b4e8-5cbc73b7c028.jpg" },
-  { id: 11, name: "15t/h 往复炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/e70ef691-fe81-43c5-8952-25cc7a21d011.jpg" },
-  { id: 12, name: "10t/h 往复炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/c6f8c034-b7e0-4f1c-a271-dc2f0fa3558d.jpg" },
-];
-
-// 鳞片炉排产品
-const linpianProducts = [
-  { id: 1, name: "65t/h 鳞片炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/42b18421-facf-472f-b04b-a41e09dd2c19.jpg" },
-  { id: 2, name: "60t/h 鳞片炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/eec6d3b9-8a37-41ac-a00c-dca30f869f87.jpg" },
-  { id: 3, name: "45t/h 鳞片炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/3e803fe1-84b4-40f3-b1ad-96e50c5f65d7.jpg" },
-  { id: 4, name: "40t/h 鳞片炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/5f880da8-0875-4821-8311-07350ae8548d.jpg" },
-  { id: 5, name: "35t/h 鳞片炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/d6fadc31-b003-4d66-9b80-a3f928644522.jpg" },
-  { id: 6, name: "30t/h 鳞片炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/32383a59-9d74-48ed-a3d7-10b0e76a53d0.jpg" },
-  { id: 7, name: "25t/h 鳞片炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/dac2d744-d9be-4898-bf45-7f16e82402b5.jpg" },
-  { id: 8, name: "20t/h 鳞片炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/1e029352-6bd0-4316-9893-75535550f79d.jpg" },
-];
-
-// 横梁炉排产品
-const hengliangProducts = [
-  { id: 1, name: "160t/h 横梁炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/a5558590-438f-44bd-8627-47272fd3af95.jpg" },
-  { id: 2, name: "130t/h 横梁炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/f6b06b63-3a3c-49dc-88c4-24f9a3904ca2.jpg" },
-  { id: 3, name: "100t/h 横梁炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/f826a76c-37b6-4206-b4bf-7162f397ed95.jpg" },
-  { id: 4, name: "80t/h 横梁炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/a08eba89-f35f-4be8-b591-934fdf84c923.jpg" },
-  { id: 5, name: "65t/h 横梁炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/8cbed208-4b66-4cc8-a761-01b575c20e1e.jpg" },
-  { id: 6, name: "45t/h 横梁炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/c8a13a2f-af8d-4568-9917-4abc7ea54749.jpg" },
-  { id: 7, name: "40t/h 横梁炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/1de694e2-1f33-4d18-b85c-670ef6738557.jpg" },
-  { id: 8, name: "35t/h 横梁炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/c56ed8b6-810c-4ef1-adfe-ad3ccf6db341.jpg" },
-];
-
-// 链带炉排产品
-const liandaiProducts = [
-  { id: 1, name: "20t/h 链带炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/d7b84c90-7eb6-46e5-b4e8-5cbc73b7c028.jpg" },
-  { id: 2, name: "15t/h 链带炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/e70ef691-fe81-43c5-8952-25cc7a21d011.jpg" },
-  { id: 3, name: "10t/h 链带炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/c6f8c034-b7e0-4f1c-a271-dc2f0fa3558d.jpg" },
-  { id: 4, name: "8t/h 链带炉排", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/4983073b-5008-434b-a67f-2b71e148ea3a.jpg" },
-];
-
-// 配件产品
-const partsProducts = [
-  { id: 1, name: "往复中片 T片", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/223af2a9-442c-40e2-8511-fe57e6e7d065.jpg" },
-  { id: 2, name: "往复中片 S片", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/2201101d-243a-44e6-b8f1-ae66f1427197.jpg" },
-  { id: 3, name: "大鳞片链节", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/42b18421-facf-472f-b04b-a41e09dd2c19.jpg" },
-  { id: 4, name: "大鳞片左夹板", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/eec6d3b9-8a37-41ac-a00c-dca30f869f87.jpg" },
-  { id: 5, name: "横梁链轴", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/a5558590-438f-44bd-8627-47272fd3af95.jpg" },
-  { id: 6, name: "横梁链块", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/f6b06b63-3a3c-49dc-88c4-24f9a3904ca2.jpg" },
-];
-
-// 除渣机&上煤机
-const chuzhaProducts = [
-  { id: 1, name: "10t/h 上煤机", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/223af2a9-442c-40e2-8511-fe57e6e7d065.jpg" },
-  { id: 2, name: "4t/h 上煤机", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/2201101d-243a-44e6-b8f1-ae66f1427197.jpg" },
-  { id: 3, name: "45t/h 除渣机", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/a5558590-438f-44bd-8627-47272fd3af95.jpg" },
-  { id: 4, name: "15-20t/h 生物质给料机", image: "https://omo-oss-image.thefastimg.com/portal-saas/new2022072919102987123/cms/image/f6b06b63-3a3c-49dc-88c4-24f9a3904ca2.jpg" },
-];
-
-// 分类描述
-const categoryDescriptions: Record<string, { title: string; desc: string; capacity: string }> = {
-  wangfu: {
-    title: "往复炉排",
-    desc: "往复炉排可为1-160t/h的锅炉配套，选用燃料范围更广适用于垃圾、生物质等。",
-    capacity: "1-160t/h",
-  },
-  linpian: {
-    title: "鳞片炉排",
-    desc: "鳞片炉排适用于蒸发量65吨/小时以下的锅炉，是中小型锅炉的理想选择。",
-    capacity: "2-65t/h",
-  },
-  hengliang: {
-    title: "横梁炉排",
-    desc: "10-200t/h横梁式链条炉排是一种机械化的、结构紧凑、技术先进的层燃设备。",
-    capacity: "10-200t/h",
-  },
-  liandai: {
-    title: "链带炉排",
-    desc: "链带炉排适用于1-30t/h锅炉配套，结构简单，运行可靠。",
-    capacity: "1-30t/h",
-  },
-  chuzha: {
-    title: "除渣机&上煤机",
-    desc: "专业的除渣机和上煤机设备，提高锅炉运行效率。",
-    capacity: "多规格",
-  },
-  laji: {
-    title: "垃圾焚烧炉",
-    desc: "专业垃圾焚烧炉排设备，环保高效。",
-    capacity: "定制",
-  },
+const categories = {
+  zh: ['全部产品', '往复炉排', '往复炉排配件', '鳞片炉排', '鳞片炉排配件', '横梁炉排', '横梁炉排配件', '链带炉排', '链带炉排配件', '除渣机&上煤机'],
+  en: ['All Products', 'Reciprocating Grate', 'Reciprocating Grate Parts', 'Chain Grate', 'Chain Grate Parts', 'Crossbeam Grate', 'Crossbeam Grate Parts', 'Chain Belt Grate', 'Chain Belt Grate Parts', 'Slag Remover & Coal Feeder'],
 };
 
-// 产品详情弹窗组件
-function ProductModal({
-  product,
-  onClose,
-  onQuote
-}: {
-  product: { name: string; image: string } | null;
-  onClose: () => void;
-  onQuote: () => void;
-}) {
-  if (!product) return null;
+const categoryMapping: Record<string, string> = {
+  '全部产品': 'all',
+  'All Products': 'all',
+  '往复炉排': '往复炉排',
+  'Reciprocating Grate': '往复炉排',
+  '往复炉排配件': '往复炉排配件',
+  'Reciprocating Grate Parts': '往复炉排配件',
+  '鳞片炉排': '鳞片炉排',
+  'Chain Grate': '鳞片炉排',
+  '鳞片炉排配件': '鳞片炉排配件',
+  'Chain Grate Parts': '鳞片炉排配件',
+  '横梁炉排': '横梁炉排',
+  'Crossbeam Grate': '横梁炉排',
+  '横梁炉排配件': '横梁炉排配件',
+  'Crossbeam Grate Parts': '横梁炉排配件',
+  '链带炉排': '链带炉排',
+  'Chain Belt Grate': '链带炉排',
+  '链带炉排配件': '链带炉排配件',
+  'Chain Belt Grate Parts': '链带炉排配件',
+  '除渣机&上煤机': '除渣机&上煤机',
+  'Slag Remover & Coal Feeder': '除渣机&上煤机',
+};
+
+const products: Product[] = [
+  {
+    id: 1,
+    name: '往复炉排',
+    nameEn: 'Reciprocating Grate',
+    category: '往复炉排',
+    categoryEn: 'Reciprocating Grate',
+    description: '采用优质合金钢材制作，结构坚固，运行平稳，适用于各种燃煤锅炉。独特的往复运动设计使燃料充分燃烧，热效率高。',
+    descriptionEn: 'Made of high-quality alloy steel, sturdy structure, stable operation, suitable for various coal-fired boilers. Unique reciprocating motion design ensures complete fuel combustion and high thermal efficiency.',
+    specs: ['材质: 优质合金钢', '寿命: ≥80000小时', '热效率: ≥85%'],
+    specsEn: ['Material: High-quality alloy steel', 'Service life: ≥80000 hours', 'Thermal efficiency: ≥85%'],
+    image: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&q=80',
+  },
+  {
+    id: 2,
+    name: '往复炉排配件-主动炉排片',
+    nameEn: 'Reciprocating Grate Parts - Active Grate Bars',
+    category: '往复炉排配件',
+    categoryEn: 'Reciprocating Grate Parts',
+    description: '高强度合金钢材质，经过特殊热处理工艺，耐磨耐腐蚀，使用寿命长。',
+    descriptionEn: 'High-strength alloy steel material,经过特殊热处理工艺,耐磨耐腐蚀,使用寿命长。',
+    specs: ['材质: Cr-Mo合金钢', '硬度: HRC45-55', '规格: 多种规格可选'],
+    specsEn: ['Material: Cr-Mo alloy steel', 'Hardness: HRC45-55', 'Specifications: Multiple options'],
+    image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=600&q=80',
+  },
+  {
+    id: 3,
+    name: '往复炉排配件-从动炉排片',
+    nameEn: 'Reciprocating Grate Parts - Driven Grate Bars',
+    category: '往复炉排配件',
+    categoryEn: 'Reciprocating Grate Parts',
+    description: '与主动炉排片配套使用，保证炉排运动同步，燃烧均匀。',
+    descriptionEn: 'Used with active grate bars to ensure synchronized grate movement and uniform combustion.',
+    specs: ['材质: 优质合金钢', '表面处理: 渗碳处理', '寿命: ≥50000小时'],
+    specsEn: ['Material: High-quality alloy steel', 'Surface treatment: Carburizing', 'Service life: ≥50000 hours'],
+    image: 'https://images.unsplash.com/photo-1565610222536-ef125c59da2e?w=600&q=80',
+  },
+  {
+    id: 4,
+    name: '鳞片炉排',
+    nameEn: 'Chain Grate',
+    category: '鳞片炉排',
+    categoryEn: 'Chain Grate',
+    description: '鳞片式结构设计，通风均匀，燃烧效果好。广泛应用于工业锅炉和电站锅炉。',
+    descriptionEn: 'Scale-type structural design, uniform ventilation, excellent combustion effect. Widely used in industrial boilers and power station boilers.',
+    specs: ['材质: 耐热合金钢', '适用燃料: 各类煤种', '特点: 通风均匀'],
+    specsEn: ['Material: Heat-resistant alloy steel', 'Fuel: Various coal types', 'Feature: Uniform ventilation'],
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80',
+  },
+  {
+    id: 5,
+    name: '鳞片炉排配件-鳞片',
+    nameEn: 'Chain Grate Parts - Scale',
+    category: '鳞片炉排配件',
+    categoryEn: 'Chain Grate Parts',
+    description: '精密铸造的鳞片部件，尺寸精确，更换方便。',
+    descriptionEn: 'Precision-cast scale components, precise dimensions, easy replacement.',
+    specs: ['材质: 球墨铸铁', '工艺: 精密铸造', '规格齐全'],
+    specsEn: ['Material: Ductile iron', 'Process: Precision casting', 'Complete specifications'],
+    image: 'https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=600&q=80',
+  },
+  {
+    id: 6,
+    name: '横梁炉排',
+    nameEn: 'Crossbeam Grate',
+    category: '横梁炉排',
+    categoryEn: 'Crossbeam Grate',
+    description: '横梁支撑结构，承重能力强，运行稳定可靠。适合大型工业锅炉使用。',
+    descriptionEn: 'Crossbeam support structure, strong load-bearing capacity, stable and reliable operation. Suitable for large industrial boilers.',
+    specs: ['承重能力: 大型炉排', '材质: 低合金钢', '特点: 结构稳定'],
+    specsEn: ['Load capacity: Large grate', 'Material: Low alloy steel', 'Feature: Stable structure'],
+    image: 'https://images.unsplash.com/photo-1625812237523-2988f5c8e8d9?w=600&q=80',
+  },
+  {
+    id: 7,
+    name: '横梁炉排配件-横梁',
+    nameEn: 'Crossbeam Grate Parts - Crossbeam',
+    category: '横梁炉排配件',
+    categoryEn: 'Crossbeam Grate Parts',
+    description: '高强度横梁部件，承载整列炉排，运行平稳。',
+    descriptionEn: 'High-strength crossbeam components, bearing the entire grate row, smooth operation.',
+    specs: ['材质: Q345合金钢', '工艺: 焊接+热处理', '规格: 按图纸定制'],
+    specsEn: ['Material: Q345 alloy steel', 'Process: Welding + Heat treatment', 'Specification: Custom per drawing'],
+    image: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=600&q=80',
+  },
+  {
+    id: 8,
+    name: '链带炉排',
+    nameEn: 'Chain Belt Grate',
+    category: '链带炉排',
+    categoryEn: 'Chain Belt Grate',
+    description: '链条传动方式，自动化程度高，运行可靠。广泛用于各类工业锅炉。',
+    descriptionEn: 'Chain transmission method, high automation, reliable operation. Widely used in various industrial boilers.',
+    specs: ['传动方式: 链条传动', '自动化程度: 高', '适用: 各种燃煤锅炉'],
+    specsEn: ['Transmission: Chain drive', 'Automation: High', 'Application: Various coal-fired boilers'],
+    image: 'https://images.unsplash.com/photo-1587293852726-70cdb56c2866?w=600&q=80',
+  },
+  {
+    id: 9,
+    name: '链带炉排配件-链条',
+    nameEn: 'Chain Belt Grate Parts - Chain',
+    category: '链带炉排配件',
+    categoryEn: 'Chain Belt Grate Parts',
+    description: '高强度链条，精密制造，耐磨耐用。',
+    descriptionEn: 'High-strength chain, precision manufacturing, wear-resistant and durable.',
+    specs: ['材质: 优质合金钢', '强度等级: 高强度', '寿命: ≥60000小时'],
+    specsEn: ['Material: High-quality alloy steel', 'Strength grade: High strength', 'Service life: ≥60000 hours'],
+    image: 'https://images.unsplash.com/photo-1504917595217-d4dc5ebb6122?w=600&q=80',
+  },
+  {
+    id: 10,
+    name: '除渣机',
+    nameEn: 'Slag Remover',
+    category: '除渣机&上煤机',
+    categoryEn: 'Slag Remover & Coal Feeder',
+    description: '自动化除渣设备，及时清除炉渣，保持炉膛清洁，提高热效率。',
+    descriptionEn: 'Automated slag removal equipment, timely removal of slag, keeping furnace clean, improving thermal efficiency.',
+    specs: ['类型: 链式/刮板式', '处理能力: 按炉型配套', '自动化程度: 高'],
+    specsEn: ['Type: Chain/scraper type', 'Processing capacity: Matching boiler model', 'Automation: High'],
+    image: 'https://images.unsplash.com/photo-1513828583688-c52646db42da?w=600&q=80',
+  },
+  {
+    id: 11,
+    name: '上煤机',
+    nameEn: 'Coal Feeder',
+    category: '除渣机&上煤机',
+    categoryEn: 'Slag Remover & Coal Feeder',
+    description: '连续式上煤设备，燃料输送均匀，自动化程度高。',
+    descriptionEn: 'Continuous coal feeding equipment, uniform fuel delivery, high automation.',
+    specs: ['类型: 皮带/链板式', '输送量: 按需求定制', '特点: 运行平稳'],
+    specsEn: ['Type: Belt/chain plate type', 'Conveying capacity: Customized per requirement', 'Feature: Smooth operation'],
+    image: 'https://images.unsplash.com/photo-1565610222536-ef125c59da2e?w=600&q=80',
+  },
+];
+
+function ProductsContent() {
+  const { t, language } = useLanguage();
+  const searchParams = useSearchParams();
+  const initialCategory = searchParams.get('category') || (language === 'zh' ? '全部产品' : 'All Products');
+  const [activeCategory, setActiveCategory] = useState(initialCategory);
+
+  useEffect(() => {
+    const category = searchParams.get('category');
+    if (category) {
+      setActiveCategory(category);
+    }
+  }, [searchParams, language]);
+
+  const currentCategories = language === 'zh' ? categories.zh : categories.en;
+  
+  const filteredProducts = activeCategory === (language === 'zh' ? '全部产品' : 'All Products') || !categoryMapping[activeCategory]
+    ? products
+    : products.filter(p => p.category === categoryMapping[activeCategory]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={onClose}>
-      <div className="bg-white max-w-2xl w-full max-h-[90vh] overflow-auto" onClick={e => e.stopPropagation()}>
-        <div className="relative">
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 w-10 h-10 bg-black/50 text-white flex items-center justify-center hover:bg-black/70 z-10"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-          <div className="aspect-video bg-gray-100">
-            <Image
-              src={product.image}
-              alt={product.name}
-              width={800}
-              height={450}
-              className="w-full h-full object-cover"
-            />
-          </div>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+
+      {/* Hero Banner */}
+      <div className="pt-20 bg-gradient-to-r from-gray-900 to-gray-800">
+        <div className="container mx-auto px-4 py-16">
+          <h1 className="text-4xl lg:text-5xl font-bold text-white text-center mb-4">
+            {t.products.title}
+          </h1>
+          <p className="text-gray-300 text-center max-w-2xl mx-auto">
+            {t.products.subtitle}
+          </p>
         </div>
-        <div className="p-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">{product.name}</h2>
-          <div className="space-y-3 text-gray-600 text-sm mb-6">
-            <p><strong>产品特点：</strong>采用优质耐热钢材料，经过精密加工制造</p>
-            <p><strong>适用范围：</strong>适用于各类锅炉配套使用</p>
-            <p><strong>技术优势：</strong>运行平稳、燃烧效率高、使用寿命长</p>
-            <p><strong>售后服务：</strong>提供专业安装指导和售后技术支持</p>
-          </div>
-          <div className="flex gap-4">
-            <button
-              onClick={onQuote}
-              className="flex-1 py-3 bg-[#f7931e] text-white font-medium hover:bg-[#e5851a] transition-colors"
-            >
-              获取报价
-            </button>
-            <button
-              onClick={onClose}
-              className="flex-1 py-3 border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-            >
-              关闭
-            </button>
+      </div>
+
+      {/* Category Filter */}
+      <div className="bg-white shadow-sm sticky top-16 lg:top-20 z-10">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-wrap gap-2 justify-center">
+            {currentCategories.map((category) => (
+              <Button
+                key={category}
+                variant={activeCategory === category ? 'default' : 'outline'}
+                onClick={() => setActiveCategory(category)}
+                className={activeCategory === category 
+                  ? 'bg-orange-500 hover:bg-orange-600' 
+                  : 'border-gray-300 hover:border-orange-500 hover:text-orange-500'}
+              >
+                {category}
+              </Button>
+            ))}
           </div>
         </div>
       </div>
+
+      {/* Products Grid */}
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProducts.map((product) => (
+            <div
+              key={product.id}
+              className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300"
+            >
+              <div className="aspect-video bg-gray-200">
+                <img
+                  src={product.image}
+                  alt={`${language === 'zh' ? product.name : product.nameEn}-${language === 'zh' ? product.description : product.descriptionEn}-大连阳光锅炉辅机有限公司`}
+                  className="w-full h-full object-cover"
+                  tabIndex={0}
+                  aria-label={`${language === 'zh' ? product.name : product.nameEn}-${language === 'zh' ? product.description : product.descriptionEn}-大连阳光锅炉辅机有限公司`}
+                />
+              </div>
+              <div className="p-6">
+                <div className="text-sm text-orange-500 mb-2">
+                  {language === 'zh' ? product.category : product.categoryEn}
+                </div>
+                <h3 className="font-bold text-lg text-gray-900 mb-2">
+                  {language === 'zh' ? product.name : product.nameEn}
+                </h3>
+                <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+                  {language === 'zh' ? product.description : product.descriptionEn}
+                </p>
+                <ul className="space-y-1 mb-4">
+                  {(language === 'zh' ? product.specs : product.specsEn).map((spec, index) => (
+                    <li key={index} className="flex items-center gap-2 text-sm text-gray-500">
+                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full" />
+                      {spec}
+                    </li>
+                  ))}
+                </ul>
+                <Link href={`/products/${product.id}`}>
+                  <Button className="w-full bg-orange-500 hover:bg-orange-600">
+                    {t.products.details}
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {filteredProducts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-500">{t.products.noProducts}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Contact CTA */}
+      <div className="bg-orange-500">
+        <div className="container mx-auto px-4 py-12 text-center">
+          <h3 className="text-2xl lg:text-3xl font-bold text-white mb-4">
+            {t.products.learnMore}
+          </h3>
+          <p className="text-white/80 mb-6">
+            {t.products.learnMoreDesc}
+          </p>
+          <Link href="/contact">
+            <Button size="lg" variant="secondary" className="bg-white text-orange-500 hover:bg-gray-100">
+              {t.products.contactUs}
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      <Footer />
+      <FixedSidebar />
     </div>
   );
 }
 
-// 报价弹窗组件
-function QuoteModal({
-  product,
-  onClose
-}: {
-  product: { name: string } | null;
-  onClose: () => void;
-}) {
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [company, setCompany] = useState("");
-  const [email, setEmail] = useState("");
-  const [inquiry, setInquiry] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle");
-  const [statusMessage, setStatusMessage] = useState("");
-
-  if (!product) return null;
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setStatus("sending");
-    setStatusMessage("");
-
-    try {
-      const res = await fetch("/api/inquiry", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          phone,
-          email,
-          company,
-          product: product.name,
-          inquiry,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setStatus("error");
-        setStatusMessage(data?.error || "提交失败，请稍后再试。");
-        return;
-      }
-
-      setStatus("success");
-      setStatusMessage("询价提交成功，我们会尽快与您联系。" );
-      setName("");
-      setPhone("");
-      setCompany("");
-      setEmail("");
-      setInquiry("");
-    } catch (error) {
-      setStatus("error");
-      setStatusMessage("网络错误，请稍后重试。");
-    }
-  };
-
+function ProductsLoading() {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60" onClick={onClose}>
-      <div className="bg-white max-w-md w-full p-6" onClick={e => e.stopPropagation()}>
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-xl font-bold text-gray-900">获取报价</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="pt-20 bg-gradient-to-r from-gray-900 to-gray-800">
+        <div className="container mx-auto px-4 py-16">
+          <Skeleton className="h-12 w-64 mx-auto mb-4" />
+          <Skeleton className="h-6 w-96 mx-auto" />
         </div>
-        <div className="mb-4 p-3 bg-gray-50 text-sm">
-          <strong>咨询产品：</strong>{product.name}
-        </div>
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">您的姓名 *</label>
-            <input
-              type="text"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">联系电话 *</label>
-            <input
-              type="tel"
-              value={phone}
-              onChange={(event) => setPhone(event.target.value)}
-              className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">邮箱 *</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">公司名称</label>
-            <input
-              type="text"
-              value={company}
-              onChange={(event) => setCompany(event.target.value)}
-              className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">需求说明 *</label>
-            <textarea
-              rows={3}
-              value={inquiry}
-              onChange={(event) => setInquiry(event.target.value)}
-              className="w-full border border-gray-300 px-3 py-2 focus:outline-none focus:border-[#f7931e]"
-              required
-            />
-          </div>
-          {statusMessage && (
-            <p className={`text-sm ${status === "success" ? "text-green-600" : "text-red-600"}`}>
-              {statusMessage}
-            </p>
-          )}
-          <button
-            type="submit"
-            disabled={status === "sending"}
-            className="w-full py-3 bg-[#f7931e] text-white font-medium hover:bg-[#e5851a] transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {status === "sending" ? "提交中..." : "提交询价"}
-          </button>
-        </form>
-        <p className="mt-4 text-xs text-gray-500 text-center">
-          或直接拨打：<a href="tel:15840905233" className="text-[#f7931e]">15840905233</a>
-        </p>
       </div>
+      <div className="container mx-auto px-4 py-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl overflow-hidden">
+              <Skeleton className="aspect-video" />
+              <div className="p-6 space-y-3">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-6 w-32" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <Footer />
     </div>
   );
 }
 
 export default function ProductsPage() {
-  const [activeCategory, setActiveCategory] = useState("wangfu");
-  const [selectedProduct, setSelectedProduct] = useState<{ name: string; image: string } | null>(null);
-  const [quoteProduct, setQuoteProduct] = useState<{ name: string } | null>(null);
-
-  // 根据分类获取产品列表
-  const getProducts = () => {
-    switch (activeCategory) {
-      case "wangfu": return wangfuProducts;
-      case "wangfu-parts": return partsProducts.slice(0, 2);
-      case "linpian": return linpianProducts;
-      case "linpian-parts": return partsProducts.slice(2, 4);
-      case "hengliang": return hengliangProducts;
-      case "hengliang-parts": return partsProducts.slice(4, 6);
-      case "liandai": return liandaiProducts;
-      case "liandai-parts": return partsProducts;
-      case "chuzha": return chuzhaProducts;
-      case "laji": return wangfuProducts.slice(0, 4);
-      default: return wangfuProducts;
-    }
-  };
-
-  const currentProducts = getProducts();
-  const categoryInfo = categoryDescriptions[activeCategory.replace("-parts", "")] || categoryDescriptions.wangfu;
-
   return (
-    <main className="min-h-screen bg-gray-50">
-      <Header />
-
-      {/* Banner */}
-      <section className="pt-24 bg-gradient-to-r from-gray-800 to-gray-900">
-        <div className="container mx-auto px-4 py-6">
-          <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
-            {wangfuProducts.slice(0, 4).map((product, i) => (
-              <div key={i} className="flex-shrink-0 w-56 h-36 bg-gray-700 overflow-hidden">
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  width={224}
-                  height={144}
-                  className="w-full h-full object-cover opacity-80 hover:opacity-100 transition-opacity"
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Breadcrumb */}
-      <section className="bg-[#1a237e] text-white py-3">
-        <div className="container mx-auto px-4 flex items-center justify-end text-sm">
-          <Link href="/" className="hover:text-[#f7931e]">首页</Link>
-          <span className="mx-2">/</span>
-          <span>产品中心</span>
-        </div>
-      </section>
-
-      {/* Category tabs */}
-      <section className="bg-white border-b">
-        <div className="container mx-auto px-4 py-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`py-3 px-4 text-center border text-sm transition-all ${
-                  activeCategory === cat.id
-                    ? "bg-[#1a237e] text-white border-[#1a237e]"
-                    : "bg-white text-gray-700 border-gray-200 hover:border-[#1a237e]"
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Filter info */}
-      <section className="bg-[#1a237e] text-white py-4">
-        <div className="container mx-auto px-4">
-          <p className="text-sm"><strong>锅炉容量：</strong>{categoryInfo.capacity}</p>
-          <p className="text-sm mt-1"><strong>使用燃料：</strong>煤、生物质、垃圾等</p>
-        </div>
-      </section>
-
-      {/* Products grid */}
-      <section className="bg-white py-8">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {currentProducts.map((product) => (
-              <div key={product.id} className="border border-gray-200 group hover:shadow-lg transition-all">
-                <div className="aspect-[4/3] bg-gray-100 overflow-hidden">
-                  <Image
-                    src={product.image}
-                    alt={product.name}
-                    width={400}
-                    height={300}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                  />
-                </div>
-                <div className="p-4 text-center">
-                  <h3 className="font-medium text-gray-900 mb-3 text-sm">{product.name}</h3>
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => setSelectedProduct(product)}
-                      className="w-full py-2 bg-[#1a237e] text-white text-sm hover:bg-[#0d47a1] transition-colors"
-                    >
-                      了解详情
-                    </button>
-                    <button
-                      onClick={() => setQuoteProduct(product)}
-                      className="w-full py-2 bg-[#1a237e] text-white text-sm hover:bg-[#0d47a1] transition-colors"
-                    >
-                      获取报价
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Pagination */}
-          <div className="flex items-center justify-center gap-2 mt-8">
-            <button className="px-3 py-1 border border-gray-300 text-gray-400">&lt;</button>
-            <button className="px-3 py-1 bg-[#1a237e] text-white">1</button>
-            <button className="px-3 py-1 border border-gray-300 text-gray-500 hover:border-[#1a237e]">2</button>
-            <button className="px-3 py-1 border border-gray-300 text-gray-500 hover:border-[#1a237e]">&gt;</button>
-          </div>
-        </div>
-      </section>
-
-      <Footer />
-      <SideToolbar />
-
-      {/* Modals */}
-      <ProductModal
-        product={selectedProduct}
-        onClose={() => setSelectedProduct(null)}
-        onQuote={() => {
-          setQuoteProduct(selectedProduct);
-          setSelectedProduct(null);
-        }}
-      />
-      <QuoteModal
-        product={quoteProduct}
-        onClose={() => setQuoteProduct(null)}
-      />
-    </main>
+    <Suspense fallback={<ProductsLoading />}>
+      <ProductsContent />
+    </Suspense>
   );
 }

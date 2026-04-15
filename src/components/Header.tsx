@@ -1,137 +1,150 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { useLocaleStore, useTranslation } from "@/lib/i18n";
+import { useState } from 'react';
+import Link from 'next/link';
+import { Menu, MessageCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
 export default function Header() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { toggleLocale } = useLocaleStore();
-  const t = useTranslation();
+  const [isOpen, setIsOpen] = useState(false);
+  const { t } = useLanguage();
 
   const navItems = [
-    { name: t.nav.home, href: "/" },
-    { name: t.nav.about, href: "/#about" },
-    { name: t.nav.products, href: "/products" },
-    { name: t.nav.solutions, href: "/#solutions" },
-    { name: t.nav.support, href: "/support" },
-    { name: t.nav.news, href: "/#news" },
-    { name: t.nav.contact, href: "/contact" },
+    { href: '/', label: t.nav.home },
+    { href: '/about', label: t.nav.about },
+    { href: '/products', label: t.nav.products },
+    { href: '/solutions', label: t.nav.solutions },
+    { href: '/contact', label: t.nav.contact },
   ];
 
   return (
-    <header className="absolute top-0 left-0 right-0 z-50">
-      {/* Top bar with phone */}
-      <div className="bg-transparent">
-        <div className="container mx-auto px-4 py-2">
-          <div className="flex items-center text-[#f7931e] text-sm">
-            <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
-            </svg>
-            <span>{t.phone}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main navigation */}
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm">
       <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between py-4">
+        <div className="flex items-center justify-between h-16 lg:h-20">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <Image
-              src="https://ext.same-assets.com/1241134631/3012068827.png"
-              alt="大连阳光 DLSTECH"
-              width={180}
-              height={50}
-              className="h-12 w-auto"
-            />
+          <Link href="/" className="flex items-center gap-2">
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">阳</span>
+            </div>
+            <div className="hidden sm:block">
+              <span className="font-bold text-lg text-gray-900">
+                {t.footer.companyName.replace('有限公司', '')}
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center space-x-1">
+          <nav className="hidden lg:flex items-center gap-8">
             {navItems.map((item) => (
               <Link
-                key={item.name}
+                key={item.href}
                 href={item.href}
-                className="px-4 py-2 text-white text-sm font-medium hover:text-[#f7931e] transition-colors relative group"
+                className="text-gray-700 hover:text-orange-500 transition-colors font-medium"
               >
-                <span>{item.name}</span>
-                <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#f7931e] transition-all group-hover:w-full" />
+                {item.label}
               </Link>
             ))}
-            {/* Language toggle button */}
-            <button
-              type="button"
-              onClick={toggleLocale}
-              className="px-4 py-2 text-white text-sm font-medium hover:text-[#f7931e] transition-colors relative group"
-            >
-              <span>{t.nav.lang}</span>
-              <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-[#f7931e] transition-all group-hover:w-full" />
-            </button>
           </nav>
 
-          {/* Action buttons */}
-          <div className="hidden lg:flex items-center space-x-3">
-            <button className="px-5 py-2 border border-[#f7931e] text-[#f7931e] text-sm font-medium hover:bg-[#f7931e] hover:text-white transition-all">
-              {t.buttons.productFilter}
-            </button>
-            <button className="px-5 py-2 bg-[#f7931e] text-white text-sm font-medium hover:bg-[#e5851a] transition-all">
-              {t.buttons.inquiry}
-            </button>
-          </div>
+          {/* Right Section */}
+          <div className="flex items-center gap-4">
+            {/* Language Toggle */}
+            <LanguageSwitcher />
 
-          {/* Mobile menu button */}
-          <button
-            type="button"
-            className="lg:hidden text-white p-2"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              {mobileMenuOpen ? (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              ) : (
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              )}
-            </svg>
-          </button>
+            {/* Contact Button - Desktop */}
+            <Link href="/contact">
+              <Button className="hidden lg:flex bg-orange-500 hover:bg-orange-600 gap-2 text-white">
+                <MessageCircle className="w-4 h-4" />
+                {t.nav.contact}
+              </Button>
+            </Link>
+
+            {/* Mobile Menu */}
+            <Sheet open={isOpen} onOpenChange={setIsOpen}>
+              <SheetTrigger asChild className="lg:hidden">
+                <Button variant="ghost" size="icon">
+                  <Menu className="w-6 h-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-80 p-0">
+                {/* Header */}
+                <div className="bg-gradient-to-r from-orange-500 to-orange-600 p-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg">
+                      <span className="text-orange-500 font-bold text-xl">阳</span>
+                    </div>
+                    <div>
+                      <h2 className="text-white font-bold text-lg">
+                        {t.footer.companyName.replace('有限公司', '')}
+                      </h2>
+                      <p className="text-orange-100 text-sm">
+                        {t.footer.tagline.split('，')[0]}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Navigation */}
+                <nav className="flex flex-col p-4">
+                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 py-2">
+                    Menu
+                  </div>
+                  {navItems.map((item, index) => (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsOpen(false)}
+                      className="flex items-center gap-4 px-3 py-4 text-gray-700 hover:text-orange-500 hover:bg-orange-50 rounded-xl transition-all font-medium group"
+                    >
+                      <span className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center group-hover:bg-orange-100 transition-colors">
+                        <span className="text-sm font-bold text-gray-400 group-hover:text-orange-500">{index + 1}</span>
+                      </span>
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
+                
+                {/* Divider */}
+                <div className="mx-4 border-t border-gray-100"></div>
+                
+                {/* Quick Contact */}
+                <div className="p-4 space-y-3">
+                  <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider px-3 py-2">
+                    Quick Contact
+                  </div>
+                  <a 
+                    href="tel:15840925233" 
+                    className="flex items-center gap-3 px-3 py-3 bg-orange-50 rounded-xl hover:bg-orange-100 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center">
+                      <span className="text-white text-lg">📞</span>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500">{t.contact.phone}</p>
+                      <p className="font-semibold text-gray-900">158-4092-5233</p>
+                    </div>
+                  </a>
+                  <Link href="/contact" onClick={() => setIsOpen(false)} className="block">
+                    <Button className="w-full bg-orange-500 hover:bg-orange-600 gap-2 text-white py-6 rounded-xl shadow-lg shadow-orange-200">
+                      <MessageCircle className="w-5 h-5" />
+                      {t.nav.contact}
+                    </Button>
+                  </Link>
+                </div>
+                
+                {/* Footer */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gray-50 border-t border-gray-100">
+                  <p className="text-center text-xs text-gray-400">
+                    © 2024 Sungrate
+                  </p>
+                </div>
+              </SheetContent>
+            </Sheet>
+          </div>
         </div>
-
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div className="lg:hidden bg-black/90 backdrop-blur-sm">
-            <nav className="flex flex-col py-4">
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="px-4 py-3 text-white text-sm font-medium hover:text-[#f7931e] hover:bg-white/10 transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  {item.name}
-                </Link>
-              ))}
-              <button
-                type="button"
-                onClick={() => {
-                  toggleLocale();
-                  setMobileMenuOpen(false);
-                }}
-                className="px-4 py-3 text-white text-sm font-medium hover:text-[#f7931e] hover:bg-white/10 transition-colors text-left"
-              >
-                {t.nav.lang}
-              </button>
-              <div className="flex space-x-3 px-4 pt-4">
-                <button className="flex-1 px-4 py-2 border border-[#f7931e] text-[#f7931e] text-sm font-medium">
-                  {t.buttons.productFilter}
-                </button>
-                <button className="flex-1 px-4 py-2 bg-[#f7931e] text-white text-sm font-medium">
-                  {t.buttons.inquiry}
-                </button>
-              </div>
-            </nav>
-          </div>
-        )}
       </div>
     </header>
   );

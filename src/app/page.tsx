@@ -1,27 +1,23 @@
-import Header from "@/components/Header";
-import Hero from "@/components/Hero";
-import Services from "@/components/Services";
-import Products from "@/components/Products";
-import News from "@/components/News";
-import About from "@/components/About";
-import Certificates from "@/components/Certificates";
-import ServiceSupport from "@/components/ServiceSupport";
-import Footer from "@/components/Footer";
-import SideToolbar from "@/components/SideToolbar";
+import Header from '@/components/Header';
+import Hero from '@/components/Hero';
+import ProductShowcase from '@/components/ProductShowcase';
+import About from '@/components/About';
+import ProjectShowcase from '@/components/ProjectShowcase';
+import Footer from '@/components/Footer';
+import FixedSidebar from '@/components/FixedSidebar';
 
 export default function Home() {
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
       <Header />
-      <Hero />
-      <Services />
-      <Products />
-      <News />
-      <About />
-      <Certificates />
-      <ServiceSupport />
+      <main>
+        <Hero />
+        <ProductShowcase />
+        <About />
+        <ProjectShowcase />
+      </main>
       <Footer />
-      <SideToolbar />
-    </main>
+      <FixedSidebar />
+    </div>
   );
 }

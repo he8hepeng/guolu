@@ -1,117 +1,115 @@
-"use client";
+'use client';
 
-import { useState, useEffect } from "react";
-import Link from "next/link";
+import { useState, useEffect, useCallback } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useLanguage } from '@/i18n/LanguageProvider';
 
-const slides = [
-  {
-    image: "https://images.unsplash.com/photo-1513828583688-c52646db42da?w=1920&q=80",
-    title: "「节」尽所「能」，践行绿色低碳生产",
-    subtitle: "核心专利技术，量身定制选配",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1565793298595-6a879b1d9492?w=1920&q=80",
-    title: "专业锅炉配件制造商",
-    subtitle: "27年行业经验，值得信赖",
-  },
-  {
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1920&q=80",
-    title: "全方位技术服务支持",
-    subtitle: "7x24小时响应，售后无忧",
-  },
-];
+interface HeroSlide {
+  title: string;
+  subtitle: string;
+  video?: string;
+}
 
 export default function Hero() {
+  const { t } = useLanguage();
   const [currentSlide, setCurrentSlide] = useState(0);
 
+  const slides: HeroSlide[] = [
+    {
+      title: t.hero.slide1Title,
+      subtitle: t.hero.slide1Subtitle,
+    },
+    {
+      title: t.hero.slide2Title,
+      subtitle: t.hero.slide2Subtitle,
+    },
+    {
+      title: t.hero.slide3Title,
+      subtitle: t.hero.slide3Subtitle,
+    },
+  ];
+
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  }, [slides.length]);
+
+  const prevSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  }, [slides.length]);
+
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
+    const interval = setInterval(nextSlide, 6000);
+    return () => clearInterval(interval);
+  }, [nextSlide]);
 
   return (
-    <section className="relative h-screen min-h-[600px] overflow-hidden">
-      {/* Background slides */}
-      {slides.map((slide, index) => (
-        <div
-          key={index}
-          className={`absolute inset-0 transition-opacity duration-1000 ${
-            index === currentSlide ? "opacity-100" : "opacity-0"
-          }`}
+    <section className="relative h-screen min-h-[600px] overflow-hidden bg-gray-900">
+      {/* Video Background */}
+      <div className="absolute inset-0">
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          className="w-full h-full object-cover opacity-50"
+          poster="https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1920&q=80"
+          aria-label="大连阳光锅炉辅机有限公司-生物质往复炉排,链条,横梁炉排,炉排厂家"
         >
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${slide.image})` }}
+          <source
+            src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4"
+            type="video/mp4"
           />
-          <div className="absolute inset-0 hero-overlay" />
-        </div>
-      ))}
+        </video>
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-gray-900/50 to-transparent" />
+      </div>
 
       {/* Content */}
-      <div className="relative z-10 h-full flex flex-col items-center justify-center px-4">
-        <div className="text-center max-w-4xl mx-auto">
-          <h1
-            className="text-3xl md:text-4xl lg:text-5xl text-white font-light mb-4 animate-fadeInUp"
-            style={{ textShadow: "2px 2px 10px rgba(0,0,0,0.3)" }}
-          >
-            {slides[currentSlide].title}
-          </h1>
-          <div className="w-16 h-0.5 bg-[#f7931e] mx-auto mb-4" />
-          <p
-            className="text-lg md:text-xl text-white/90 mb-8 animate-fadeInUp"
-            style={{ animationDelay: "0.2s" }}
-          >
-            {slides[currentSlide].subtitle}
-          </p>
-          <Link
-            href="#about"
-            className="inline-block px-8 py-3 bg-transparent border-2 border-white text-white font-medium hover:bg-white hover:text-gray-900 transition-all animate-fadeInUp"
-            style={{ animationDelay: "0.4s" }}
-          >
-            Learn More +
-          </Link>
-        </div>
-
-        {/* Scroll indicator */}
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 flex flex-col items-center text-white">
-          <div className="w-6 h-10 border-2 border-white rounded-full flex justify-center p-1">
-            <div className="w-1.5 h-3 bg-white rounded-full animate-bounce" />
+      <div className="relative z-10 h-full flex items-center">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl">
+            <div className="animate-in slide-in-from-bottom duration-1000">
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
+                {slides[currentSlide].title}
+              </h1>
+              <p className="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl">
+                {slides[currentSlide].subtitle}
+              </p>
+            </div>
           </div>
-          <span className="mt-2 text-xs tracking-wider">SCROLL DOWN</span>
         </div>
+      </div>
 
-        {/* Slide navigation */}
-        <div className="absolute bottom-12 right-8 flex items-center space-x-4">
+      {/* Navigation Arrows */}
+      <button
+        onClick={prevSlide}
+        className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full transition-colors"
+        aria-label="Previous slide"
+      >
+        <ChevronLeft className="w-6 h-6 text-white" />
+      </button>
+      <button
+        onClick={nextSlide}
+        className="absolute right-20 lg:right-4 top-1/2 -translate-y-1/2 z-20 p-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-full transition-colors"
+        aria-label="Next slide"
+      >
+        <ChevronRight className="w-6 h-6 text-white" />
+      </button>
+
+      {/* Dots */}
+      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        {slides.map((_, index) => (
           <button
-            onClick={() => setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length)}
-            className="w-10 h-10 border border-white/50 text-white flex items-center justify-center hover:bg-white/20 transition-all"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <div className="flex space-x-2">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`w-3 h-3 rounded-full transition-all ${
-                  index === currentSlide ? "bg-[#f7931e]" : "bg-white/50"
-                }`}
-              />
-            ))}
-          </div>
-          <button
-            onClick={() => setCurrentSlide((prev) => (prev + 1) % slides.length)}
-            className="w-10 h-10 border border-white/50 text-white flex items-center justify-center hover:bg-white/20 transition-all"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
+            key={index}
+            onClick={() => setCurrentSlide(index)}
+            className={`w-3 h-3 rounded-full transition-all ${
+              currentSlide === index
+                ? 'bg-orange-500 w-8'
+                : 'bg-white/50 hover:bg-white/80'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
       </div>
     </section>
   );

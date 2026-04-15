@@ -1,0 +1,34 @@
+# robots.txt for 大连阳光锅炉辅机有限公司
+# https://www.sungrate.com
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://www.sungrate.com/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 10
+
+# Disallow unnecessary paths
+Disallow: /api/
+Disallow: /_next/
+Disallow: /*.json$
+Disallow: /private/
+
+# Allow search engines to crawl important pages
+Allow: /$
+Allow: /about
+Allow: /products
+Allow: /solutions
+Allow: /contact
+
+# Specific bot instructions
+User-agent: Googlebot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: bingbot
+Allow: /
